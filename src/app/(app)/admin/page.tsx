@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { UsersTable } from "@/components/users-table";
+import { UsersManager } from "@/components/users-manager";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +34,9 @@ export default async function AdminPage() {
   const me = await requireRole(MANAGER_ROLES, "/admin");
   const result = await fetchUsers();
   const canEditRoles = me.role === "Admin";
+  // Inviting directly creates an account (stands in for an email invite), so
+  // it carries the same "Admin only" restriction as assigning roles.
+  const canInvite = me.role === "Admin";
 
   return (
     <div className="space-y-6">
@@ -41,8 +44,8 @@ export default async function AdminPage() {
         <h1 className="text-2xl font-semibold text-primary">Team &amp; roles</h1>
         <p className="text-muted-foreground">
           {canEditRoles
-            ? "Assign roles to control who can review reports across the team."
-            : "You can view the team roster. Only an Admin can change roles."}
+            ? "Invite team members, assign roles, and enable or disable accounts."
+            : "You can view the team roster and enable or disable accounts. Only an Admin can invite people or change roles."}
         </p>
       </div>
 
@@ -51,7 +54,9 @@ export default async function AdminPage() {
           <CardTitle className="text-lg">Team members</CardTitle>
           <CardDescription>
             Roles: Team Member (own reports) · Manager / Admin (review all
-            reports).
+            reports). Disabling an account keeps their past reports and
+            projects intact — it&apos;s this app&apos;s equivalent of removing
+            them, and can be undone at any time.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -62,10 +67,11 @@ export default async function AdminPage() {
               <AlertDescription>{result.error}</AlertDescription>
             </Alert>
           ) : (
-            <UsersTable
+            <UsersManager
               users={result.users}
               currentUserId={me.id}
               canEditRoles={canEditRoles}
+              canInvite={canInvite}
             />
           )}
         </CardContent>
