@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { addDays, mostRecentMonday } from "@/lib/format";
 import { REPORT_SECTIONS, REPORT_SECTION_LABELS } from "@/lib/report-schema";
 import { REPORT_STATUS_LABELS } from "@/lib/types";
+import { NATIVE_SELECT_CLASS } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,9 +25,6 @@ export interface DashboardParams {
 
 // Only these can be filtered from `GET /reports/` — a DRAFT is never listed.
 const LIST_STATUSES = ["SUBMITTED", "NEEDS_CORRECTION", "APPROVED"] as const;
-
-const selectClass =
-  "h-9 rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
 
 function href(params: DashboardParams, overrides: Partial<DashboardParams>): string {
   const merged = { ...params, ...overrides };
@@ -90,7 +88,7 @@ export function SectionPicker({ params }: { params: DashboardParams }) {
       <Label htmlFor="dash-section">Compare a section across the team</Label>
       <select
         id="dash-section"
-        className={selectClass}
+        className={NATIVE_SELECT_CLASS}
         value={params.section ?? ""}
         onChange={(e) =>
           router.push(href(params, { section: e.target.value || undefined }))
@@ -129,7 +127,7 @@ export function TeamReportFilters({
         <Label htmlFor="f-member">Team member</Label>
         <select
           id="f-member"
-          className={selectClass}
+          className={NATIVE_SELECT_CLASS}
           value={params.user_id ?? ""}
           onChange={(e) => set({ user_id: e.target.value || undefined })}
         >
@@ -146,7 +144,7 @@ export function TeamReportFilters({
         <Label htmlFor="f-project">Project / category</Label>
         <select
           id="f-project"
-          className={selectClass}
+          className={NATIVE_SELECT_CLASS}
           value={params.project_id ?? ""}
           onChange={(e) => set({ project_id: e.target.value || undefined })}
         >
@@ -163,7 +161,7 @@ export function TeamReportFilters({
         <Label htmlFor="f-status">Status</Label>
         <select
           id="f-status"
-          className={selectClass}
+          className={NATIVE_SELECT_CLASS}
           value={params.status ?? ""}
           onChange={(e) => set({ status: e.target.value || undefined })}
         >

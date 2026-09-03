@@ -4,7 +4,9 @@ import { useState, useTransition } from "react";
 import { Loader2 } from "lucide-react";
 
 import { assignRoleAction } from "@/lib/auth-actions";
-import { ROLES, type Role, type User } from "@/lib/types";
+import { updateUserStatusAction } from "@/lib/user-actions";
+import { ROLES, type Role, type User, type UserStatus } from "@/lib/types";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -67,14 +69,80 @@ function RoleCell({
   );
 }
 
+/**
+ * Enable/disable an account — this app's "remove" for a team member. Disabling
+ * keeps their past reports and projects intact; it just blocks sign-in, and can
+ * be reversed at any time.
+ */
+function StatusCell({
+  user,
+  disabled,
+}: {
+  user: User;
+  disabled: boolean;
+}) {
+  const [status, setStatus] = useState<UserStatus>(user.status);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  function toggle() {
+    const target: UserStatus = status === "active" ? "disabled" : "active";
+    const previous = status;
+    setStatus(target);
+    setError(null);
+    startTransition(async () => {
+      const res = await updateUserStatusAction(user.id, target);
+      if (!res.ok) {
+        setStatus(previous);
+        setError(res.error ?? "Could not update the account status.");
+      }
+    });
+  }
+
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center gap-2">
+        <span
+          className={
+            status === "active" ? "text-emerald-600" : "text-muted-foreground"
+          }
+        >
+          {status === "active" ? "Active" : "Disabled"}
+        </span>
+        {!disabled ? (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={toggle}
+            disabled={pending}
+          >
+            {pending ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : status === "active" ? (
+              "Disable"
+            ) : (
+              "Enable"
+            )}
+          </Button>
+        ) : null}
+      </div>
+      {error ? <p className="text-xs text-destructive">{error}</p> : null}
+    </div>
+  );
+}
+
 export function UsersTable({
   users,
   currentUserId,
   canEditRoles,
+  canEditStatus,
 }: {
   users: User[];
   currentUserId: string;
   canEditRoles: boolean;
+  /** Whether the caller may enable/disable accounts (Manager or Admin). */
+  canEditStatus: boolean;
 }) {
   if (users.length === 0) {
     return (
@@ -110,15 +178,7 @@ export function UsersTable({
                   {user.email}
                 </td>
                 <td className="py-3 pr-4">
-                  <span
-                    className={
-                      user.status === "active"
-                        ? "text-emerald-600"
-                        : "text-muted-foreground"
-                    }
-                  >
-                    {user.status}
-                  </span>
+                  <StatusCell user={user} disabled={!canEditStatus || isSelf} />
                 </td>
                 <td className="py-3 pr-4">
                   <RoleCell

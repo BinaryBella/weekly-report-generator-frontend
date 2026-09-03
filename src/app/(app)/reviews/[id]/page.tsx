@@ -76,7 +76,13 @@ export default async function ReviewReportPage({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold text-primary">
-            {authorName}&apos;s weekly report
+            <Link
+              href={`/reviews/members/${report.user_id}`}
+              className="underline-offset-4 hover:underline"
+            >
+              {authorName}
+            </Link>
+            &apos;s weekly report
           </h1>
           <p className="text-sm text-muted-foreground">
             {report.submitted_at

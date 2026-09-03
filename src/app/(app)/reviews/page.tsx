@@ -22,6 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { DashboardTabs } from "@/components/dashboard-tabs";
 import { ReviewsQueue } from "@/components/reviews-queue";
 import {
   SectionPicker,
@@ -142,6 +143,8 @@ export default async function TeamDashboardPage({
           across the team, and open any report to approve it or request changes.
         </p>
       </div>
+
+      <DashboardTabs active="overview" />
 
       {/* Submission status per team member, for the selected week */}
       <Card>

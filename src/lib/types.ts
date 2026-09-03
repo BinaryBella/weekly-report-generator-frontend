@@ -292,3 +292,158 @@ export interface TeamSectionResponse {
   project_id: string | null;
   entries: TeamSectionEntry[];
 }
+
+/**
+ * Shapes for the manager insights dashboard (backend `GET /reports/dashboard/summary`,
+ * `.../charts/*` and `.../activity`).
+ */
+
+/** Submitted vs pending vs late, for the selected week's roster. */
+export interface SubmissionCompliance {
+  submitted: number;
+  /** Not started yet, or still a private draft. */
+  pending: number;
+  /** Submitted on/before that report's week-end date. */
+  on_time: number;
+  /** Submitted after that report's week-end date. */
+  late: number;
+  /** submitted / total_members, 0..1. */
+  compliance_rate: number;
+  /** on_time / total_members, 0..1. */
+  on_time_rate: number;
+}
+
+/** The four headline metrics for the selected week (`GET /reports/dashboard/summary`). */
+export interface DashboardSummary {
+  week_start_date: string;
+  project_id: string | null;
+  total_members: number;
+  total_submitted_this_week: number;
+  submission_compliance: SubmissionCompliance;
+  needs_correction_count: number;
+  open_blockers: number;
+  open_key_issues: number;
+}
+
+export interface TrendPoint {
+  week_start_date: string;
+  reports: number;
+  completed_tasks: number;
+  total_tasks: number;
+}
+
+/** One line series in the tasks-completed trend: the team, or one member. */
+export interface TrendSeries {
+  key: string;
+  label: string;
+  points: TrendPoint[];
+}
+
+/** `GET /reports/dashboard/charts/tasks-completed-trend`. */
+export interface TasksCompletedTrend {
+  group_by: "team" | "user";
+  project_id: string | null;
+  series: TrendSeries[];
+}
+
+export interface StatusByMemberRow {
+  user_id: string;
+  user_name: string;
+  not_started: number;
+  draft: number;
+  submitted: number;
+  needs_correction: number;
+  approved: number;
+}
+
+/** `GET /reports/dashboard/charts/status-by-member`. */
+export interface StatusByMemberData {
+  week_start_date: string | null;
+  date_from: string | null;
+  date_to: string | null;
+  project_id: string | null;
+  rows: StatusByMemberRow[];
+}
+
+export interface WorkloadByProjectRow {
+  project_id: string;
+  project_name: string;
+  reports: number;
+  tasks: number;
+  planned_hours: number;
+  spent_hours: number;
+}
+
+/** `GET /reports/dashboard/charts/workload-by-project`. */
+export interface WorkloadByProject {
+  week_start_date: string | null;
+  date_from: string | null;
+  date_to: string | null;
+  rows: WorkloadByProjectRow[];
+}
+
+/** `GET /reports/dashboard/charts/hours-by-type` — team-wide sum, in hours. */
+export interface HoursByType {
+  week_start_date: string | null;
+  date_from: string | null;
+  date_to: string | null;
+  project_id: string | null;
+  reports_counted: number;
+  development: number;
+  testing: number;
+  meetings: number;
+  documentation: number;
+  other: number;
+  total: number;
+}
+
+export type ActivityEventType = "SUBMITTED" | "APPROVED" | "CHANGES_REQUESTED";
+
+/** One entry in the recent-activity feed. */
+export interface ActivityEvent {
+  type: ActivityEventType;
+  at: string;
+  report_id: string;
+  week_start_date: string;
+  project_id: string;
+  /** The report's owner. */
+  author_id: string;
+  author_name: string;
+  /** The manager who acted, for review actions. */
+  actor_id: string | null;
+  actor_name: string | null;
+  /** The general comment, for CHANGES_REQUESTED. */
+  comment: string | null;
+}
+
+/** `GET /reports/dashboard/activity`. */
+export interface ActivityFeed {
+  events: ActivityEvent[];
+}
+
+/**
+ * Basic at-a-glance stats for one team member, all-time. Counts only reports
+ * that have left DRAFT — a member's private drafts are never disclosed to a
+ * manager, here either.
+ */
+export interface MemberStats {
+  total_reports: number;
+  submitted_count: number;
+  needs_correction_count: number;
+  approved_count: number;
+  /** approved / (approved + needs_correction), 0 if none reviewed yet. */
+  approval_rate: number;
+  total_tasks_completed: number;
+  total_hours_logged: number;
+  last_submitted_at: string | null;
+}
+
+/**
+ * Team member profile: identity, basic stats and recent report history.
+ * Backend: `GET /reports/dashboard/member/{user_id}` (Manager/Admin only).
+ */
+export interface MemberProfile {
+  user: User;
+  stats: MemberStats;
+  recent_reports: ReportListItem[];
+}

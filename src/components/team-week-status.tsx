@@ -67,7 +67,12 @@ export function TeamWeekStatus({ data }: { data: TeamStatusResponse }) {
               rows.map((row) => (
                 <TableRow key={row.user_id}>
                   <TableCell>
-                    <div className="font-medium">{row.user_name}</div>
+                    <Link
+                      href={`/reviews/members/${row.user_id}`}
+                      className="font-medium underline-offset-4 hover:underline"
+                    >
+                      {row.user_name}
+                    </Link>
                     <div className="text-xs text-muted-foreground">
                       {row.user_email}
                     </div>
